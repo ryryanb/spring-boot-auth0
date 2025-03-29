@@ -15,9 +15,10 @@ The HomeController class provides:
 ✅ A homepage displaying user profile data from an OIDC (OpenID Connect) provider  
 ✅ An endpoint to retrieve user session data stored in Redis  
 ✅ An endpoint to refresh authentication tokens using Auth0's OAuth 2.0 API  
-Let's break it down.
+Let's break it down.  
 
-#### 1. Displaying User Profile Information
+#### 1. Displaying User Profile Information  
+```
 @GetMapping("/")
 public String home(Model model, @AuthenticationPrincipal OidcUser principal) {
     if (principal != null) {
@@ -25,6 +26,7 @@ public String home(Model model, @AuthenticationPrincipal OidcUser principal) {
     }
     return "index";
 }
+```
 When a user logs in via OIDC (OpenID Connect), their authentication details (claims) are retrieved and displayed on the homepage. The profile data might include:  
     • Name  
     • Email  

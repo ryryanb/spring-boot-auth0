@@ -1,3 +1,5 @@
+# Building a Scalable Auth System: OAuth2, Spring Boot, and Redis
+
 Welcome to this project, a Spring Boot web application that integrates OAuth2 authentication using Okta/Auth0 and securely manages user sessions with Redis. This project demonstrates how to implement secure user authentication, handle session persistence, and ensure a seamless login/logout experience.
 Key Features 🚀
 ✅ Secure OAuth2 Authentication – Users can log in using Okta/Auth0 with OpenID Connect (OIDC).
@@ -6,15 +8,15 @@ Key Features 🚀
 ✅ Secure Logout with Redirection – Ensures users are properly logged out and redirected to the appropriate page.
 Whether you're building a secure, scalable authentication system or just exploring Spring Security and OAuth2, this project serves as a practical example of modern authentication practices in Java. 
 
-COMPONENTS
-A. HomeController.java
+## COMPONENTS
+### A. HomeController.java
 The HomeController class provides:
 ✅ A homepage displaying user profile data from an OIDC (OpenID Connect) provider
 ✅ An endpoint to retrieve user session data stored in Redis
 ✅ An endpoint to refresh authentication tokens using Auth0's OAuth 2.0 API
 Let's break it down.
 
-1. Displaying User Profile Information
+#### 1. Displaying User Profile Information
 @GetMapping("/")
 public String home(Model model, @AuthenticationPrincipal OidcUser principal) {
     if (principal != null) {
@@ -28,7 +30,7 @@ When a user logs in via OIDC (OpenID Connect), their authentication details (cla
     • Profile Picture
     • Other identity claims
 
-2. Retrieving User Sessions from Redis
+#### 2. Retrieving User Sessions from Redis
 @GetMapping("/user/session")
 public ResponseEntity<Map<String, String>> getSession(@RequestParam String userId) {
     Map<String, String> session = redisAuthService.getSession(userId);
@@ -50,7 +52,7 @@ curl -X GET "http://localhost:3000/user/session?userId=google-oauth2%7C115873500
     "error": "Session not found"
 }
 
-3. Refreshing Access Tokens via Auth0
+#### 3. Refreshing Access Tokens via Auth0
 @PostMapping("/refresh-token")
 public ResponseEntity<Map<String, String>> refreshToken(@RequestParam String userId) {
     Map<String, String> session = redisAuthService.getSession(userId);
@@ -90,13 +92,13 @@ curl -X POST "http://localhost:3000/refresh-token?userId=google-oauth2%7C1158735
     "error": "Failed to refresh token"
 }
 
-B. SecurityConfig.java
+### B. SecurityConfig.java
 The configuration enables:  
 ✅ **OAuth2 login with Okta/Auth0**.  
 ✅ **Custom authentication success handling**.  
 ✅ **Secure logout with redirection to the identity provider**.  
 
-### **Class Overview**  
+#### **Class Overview**  
 ```java
 @Configuration
 public class SecurityConfig {
@@ -106,9 +108,9 @@ public class SecurityConfig {
 
 ---
 
-## **2. Configuring OAuth2 Login & Security**  
+#### **1. Configuring OAuth2 Login & Security**  
 
-### **Injecting Configuration Values for Okta/Auth0**  
+##### **Injecting Configuration Values for Okta/Auth0**  
 ```java
 @Value("${okta.oauth2.issuer}")
 private String issuer;
@@ -120,7 +122,7 @@ private String clientId;
 
 ---
 
-### **Defining the Security Filter Chain**  
+##### **Defining the Security Filter Chain**  
 
 ```java
 @Bean
@@ -150,7 +152,7 @@ public SecurityFilterChain configure(HttpSecurity http) throws Exception {
 
 ---
 
-## **3. Handling Logout & Redirecting Users**  
+#### **2. Handling Logout & Redirecting Users**  
 
 ```java
 private LogoutHandler logoutHandler() {
@@ -179,7 +181,7 @@ https://your-auth0-domain.com/v2/logout?client_id=YOUR_CLIENT_ID&returnTo=http:/
 
 ---
 
-## **4. Custom Authentication Success Handling**  
+#### **3. Custom Authentication Success Handling**  
 
 This class **injects a custom authentication success handler**:  
 ```java
@@ -194,9 +196,9 @@ public SecurityConfig(AuthenticationSuccessHandler successHandler) {
 
 ---
 
-## **5. Setting Up OAuth2 with Okta or Auth0**  
+#### **4. Setting Up OAuth2 with Okta or Auth0**  
 
-### **Okta Configuration (`application.properties`)**  
+##### **Okta Configuration (`application.properties`)**  
 ```properties
 okta.oauth2.issuer=https://your-okta-domain.com/oauth2/default/
 okta.oauth2.client-id=your-client-id
@@ -204,28 +206,25 @@ okta.oauth2.client-secret=your-client-secret
 ```
 ---
 
-## **6. Testing OAuth2 Login & Logout**  
+#### **5. Testing OAuth2 Login & Logout**  
 
-### **Login Flow**  
+##### **Login Flow**  
 1️⃣ **Start your Spring Boot application.**  
 2️⃣ **Visit `http://localhost:8080`** and click the login button.  
 3️⃣ You will be redirected to **Okta/Auth0’s login page**.  
 4️⃣ After logging in, you should be redirected **back to your app**.  
 
-### **Logout Flow**  
+##### **Logout Flow**  
 1️⃣ Click **Logout** in your application.  
 2️⃣ You will be redirected to Okta/Auth0’s logout URL.  
 3️⃣ After logging out, you’ll return to your app’s homepage.  
 
-C. OAuth2AuthenticationSuccessHandler.java
+### C. OAuth2AuthenticationSuccessHandler.java
 This plays a crucial role in handling **OAuth 2.0 login success events**. This component ensures that:  
 
 ✅ User data is **retrieved and stored in the database**.  
 ✅ The **OAuth access token and refresh token** are **stored in Redis** for session management.  
 ✅ Users are **redirected to the homepage** after successful authentication.  
-
-
-### **Class Overview**  
 
 ```java
 @Component
@@ -233,7 +232,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
 ```
 This class implements `AuthenticationSuccessHandler`, which Spring Security invokes **after a successful OAuth login**. It handles storing **user details**, **tokens**, and managing **user sessions**.  
 
-### **Injected Dependencies**  
+#### **Injected Dependencies**  
 
 ```java
 private final UserRepository userRepository;
@@ -246,9 +245,9 @@ private final OAuth2AuthorizedClientService authorizedClientService;
 
 ---
 
-## **2. Handling User Authentication Data**  
+#### **1. Handling User Authentication Data**  
 
-### **Extracting User Information from OAuth Response**  
+##### **Extracting User Information from OAuth Response**  
 
 ```java
 OAuth2User oAuth2User = oauthToken.getPrincipal();
@@ -256,7 +255,7 @@ Map<String, Object> attributes = oAuth2User.getAttributes();
 ```
 Once a user **successfully logs in**, we retrieve **their profile details** from the **OAuth 2.0 provider**.  
 
-#### **Captured User Data**  
+##### **Captured User Data**  
 ```java
 String userId = (String) attributes.get("sub");
 String email = (String) attributes.get("email");
@@ -283,9 +282,9 @@ This information is extracted from the **OAuth provider’s response** (e.g., **
 
 ---
 
-## **3. Storing User Information in the Database**  
+#### **2. Storing User Information in the Database**  
 
-### **Check if the User Exists**  
+##### **Check if the User Exists**  
 
 ```java
 Optional<User> existingUser = userRepository.findByAuth0Id(userId);
@@ -293,7 +292,7 @@ Optional<User> existingUser = userRepository.findByAuth0Id(userId);
 - If the user **already exists**, we simply **update their last login time**.  
 - If the user **does not exist**, we **create a new record** in the database.  
 
-### **Saving or Updating the User Record**  
+##### **Saving or Updating the User Record**  
 
 ```java
 if (existingUser.isEmpty()) {
@@ -317,7 +316,7 @@ if (existingUser.isEmpty()) {
 
 ---
 
-## **4. Extracting OAuth Tokens**  
+#### **3. Extracting OAuth Tokens**  
 
 To make authenticated API requests, we **retrieve the OAuth access and refresh tokens**.  
 
@@ -336,7 +335,7 @@ This step ensures that **access and refresh tokens** are securely stored for lat
 
 ---
 
-## **5. Storing OAuth Tokens in Redis**  
+#### **4. Storing OAuth Tokens in Redis**  
 
 Finally, the **access token and refresh token** are stored in **Redis** for session management.  
 
@@ -346,7 +345,7 @@ redisAuthService.saveSession(userId, accessToken, refreshToken);
 
 ---
 
-## **6. Redirecting the User to the Homepage**  
+#### **5. Redirecting the User to the Homepage**  
 
 After successful login, the user is redirected to the home page.  
 
@@ -354,7 +353,7 @@ After successful login, the user is redirected to the home page.
 response.sendRedirect("/");
 ```
 
-D. RedisAuthService
+### D. RedisAuthService
 The `RedisAuthService` class is responsible for **managing user authentication sessions using Redis** in the Spring Boot application.  
 
 This service provides:  
@@ -363,15 +362,14 @@ This service provides:
 ✅ **Automatic session expiration** after 15 minutes.  
 ✅ **Session deletion** when the user logs out.  
 
----
-### **Class Overview**  
+
 ```java
 @Service
 public class RedisAuthService {
 ```
 This class is annotated with `@Service`, meaning it's a **Spring-managed bean** responsible for handling authentication-related operations with Redis.  
 
-### **Injecting RedisTemplate**  
+#### **Injecting RedisTemplate**  
 ```java
 private final RedisTemplate<String, Object> redisTemplate;
 
@@ -390,9 +388,9 @@ public RedisAuthService(RedisTemplate<String, Object> redisTemplate) {
 
 ---
 
-## **2. Storing User Sessions in Redis**  
+#### **1. Storing User Sessions in Redis**  
 
-### **Saving a User Session**  
+##### **Saving a User Session**  
 ```java
 private static final long TOKEN_EXPIRATION = 900; // 15 minutes
 
@@ -403,7 +401,7 @@ public void saveSession(String userId, String accessToken, String refreshToken) 
     redisTemplate.opsForValue().set("session:" + userId, sessionData, TOKEN_EXPIRATION, TimeUnit.SECONDS);
 }
 ```
-#### **What happens here?**  
+##### **What happens here?**  
 1️⃣ **Creates a HashMap** to store access and refresh tokens.  
 2️⃣ **Stores the session in Redis** under the key `"session:userId"`.  
 3️⃣ **Sets an expiration time of 15 minutes** (900 seconds).  
@@ -415,14 +413,14 @@ public void saveSession(String userId, String accessToken, String refreshToken) 
 
 ---
 
-## **3. Retrieving a User Session**  
+#### **2. Retrieving a User Session**  
 
 ```java
 public Map<String, String> getSession(String userId) {
     return (Map<String, String>) redisTemplate.opsForValue().get("session:" + userId);
 }
 ```
-#### **How it works:**  
+##### **How it works:**  
 1️⃣ Retrieves the **user’s session** from Redis using the key `"session:userId"`.  
 2️⃣ Returns the session data **as a `Map<String, String>`**, containing the access and refresh tokens.  
 
@@ -435,14 +433,14 @@ public Map<String, String> getSession(String userId) {
 ```
 ---
 
-## **4. Deleting a User Session**  
+#### **3. Deleting a User Session**  
 
 ```java
 public void deleteSession(String userId) {
     redisTemplate.delete("session:" + userId);
 }
 ```
-#### **How it works:**  
+##### **How it works:**  
 1️⃣ **Removes the session data** from Redis when a user logs out.  
 2️⃣ **Ensures that access and refresh tokens are no longer valid.**  
 
@@ -453,25 +451,25 @@ public void deleteSession(String userId) {
 
 ---
 
-## **5. Redis CLI Example: Checking Stored Sessions**  
+#### **4. Redis CLI Example: Checking Stored Sessions**  
 
-### **Saving a Session**  
+##### **Saving a Session**  
 ```bash
 > SET session:google-oauth2|115873500067805995920 '{"accessToken":"abc123","refreshToken":"xyz789"}' EX 900
 ```
-### **Retrieving a Session**  
+##### **Retrieving a Session**  
 ```bash
 > GET session:google-oauth2|115873500067805995920
 {"accessToken":"abc123","refreshToken":"xyz789"}
 ```
-### **Deleting a Session**  
+##### **Deleting a Session**  
 ```bash
 > DEL session:google-oauth2|115873500067805995920
 (integer) 1
 ```
 ---
 
-## **6. When to Use Redis for Authentication?**  
+#### **5. When to Use Redis for Authentication?**  
 
 ✅ **Best for stateless authentication** → If you don’t want to store sessions in your database.  
 ✅ **Perfect for microservices** → Since sessions are centralized in Redis, multiple services can access them.  
@@ -483,7 +481,7 @@ public void deleteSession(String userId) {
 - **Extra infrastructure needed** (a Redis server must be running).  
 
 ---
-E. RedisConfig.java
+### E. RedisConfig.java
 The `RedisConfig` class **sets up Redis as the session storage for authentication** in the Spring Boot application.  
 
 This configuration enables:  
@@ -491,9 +489,7 @@ This configuration enables:
 ✅ **Efficient serialization and deserialization** of data.  
 ✅ **Connection pooling** via **Lettuce**, a high-performance Redis client.  
 
----
-
-### **Class Overview**  
+ 
 ```java
 @Configuration
 public class RedisConfig {
@@ -501,7 +497,7 @@ public class RedisConfig {
 - The `@Configuration` annotation tells Spring that this class **provides configuration beans**.  
 - It **sets up Redis** for storing authentication sessions.  
 
-### **Creating a RedisTemplate Bean**  
+#### **Creating a RedisTemplate Bean**  
 ```java
 @Bean
 public RedisTemplate<String, Object> redisTemplate(LettuceConnectionFactory connectionFactory) {
@@ -520,7 +516,7 @@ public RedisTemplate<String, Object> redisTemplate(LettuceConnectionFactory conn
 
 ---
 
-## **2. Why Use Lettuce for Redis?**  
+#### **1. Why Use Lettuce for Redis?**  
 
 Lettuce is a **high-performance, non-blocking Redis client** built on Netty.  
 Compared to **Jedis**, Lettuce offers:  
@@ -546,16 +542,16 @@ public LettuceConnectionFactory redisConnectionFactory() {
 
 ---
 
-## **3. Customizing Redis Serialization**  
+#### **2. Customizing Redis Serialization**  
 
-### **Why Serialize Keys as Strings?**  
+##### **Why Serialize Keys as Strings?**  
 ```java
 template.setKeySerializer(new StringRedisSerializer());
 ```
 - Ensures **human-readable keys** in Redis.  
 - Avoids issues when using Redis commands like `KEYS *`.  
 
-### **Why Serialize Values as JSON?**  
+##### **Why Serialize Values as JSON?**  
 ```java
 template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
 ```
@@ -572,14 +568,14 @@ JSON format makes it **easy to debug and inspect** sessions directly in Redis CL
 
 ---
 
-## **4. How to Verify Redis Connection?**  
+#### **3. How to Verify Redis Connection?**  
 
-### **Check if Redis is Running**  
+##### **Check if Redis is Running**  
 ```bash
 redis-cli ping
 # Response: PONG
 ```
-### **Check Redis Connection in Spring Boot**  
+##### **Check Redis Connection in Spring Boot**  
 Add this to `application.properties`:  
 ```properties
 spring.redis.host=localhost
@@ -591,7 +587,7 @@ Connected to Redis at localhost:6379
 ```
 ---
 
-## **5. Testing RedisTemplate**  
+#### **4. Testing RedisTemplate**  
 
 To confirm that your Redis setup works, create a simple test:  
 
@@ -612,7 +608,7 @@ public class RedisTemplateTest {
 ```
 ✅ **If the test passes**, your RedisTemplate is correctly configured.  
 
-F. ProfileController.java
+### F. ProfileController.java
 
 The `ProfileController` class  **retrieves and displays user profile information** after OAuth 2.0 authentication.  
 
@@ -622,16 +618,13 @@ This controller is responsible for:
 ✅ Logging any errors that occur while processing user data.  
 ✅ Rendering the **profile page** with the extracted information.  
 
----
-
-### **Class Overview**  
 ```java
 @Controller
 public class ProfileController {
 ```
 This class is annotated with `@Controller`, meaning it **handles HTTP requests** and **renders a Thymeleaf or JSP view** instead of returning JSON data like a typical REST controller.  
 
-### **Logger and ObjectMapper**  
+#### **Logger and ObjectMapper**  
 
 ```java
 private final Logger log = LoggerFactory.getLogger(this.getClass());
@@ -643,9 +636,9 @@ private final static ObjectMapper mapper = new ObjectMapper().registerModule(new
 
 ---
 
-## **2. Handling Profile Requests**  
+#### **1. Handling Profile Requests**  
 
-### **Defining the Profile Endpoint**  
+##### **Defining the Profile Endpoint**  
 
 ```java
 @GetMapping("/profile")
@@ -655,7 +648,7 @@ public String profile(Model model, @AuthenticationPrincipal OidcUser oidcUser) {
     return "profile";
 }
 ```
-#### **What happens here?**  
+##### **What happens here?**  
 1️⃣ The user accesses **`/profile`**, triggering the `profile()` method.  
 2️⃣ The method retrieves **user details** from the OAuth 2.0 **OIDC token** (`OidcUser`).  
 3️⃣ The **claims (user info)** are added to the `Model`, making them accessible in the view.  
@@ -663,9 +656,9 @@ public String profile(Model model, @AuthenticationPrincipal OidcUser oidcUser) {
 5️⃣ The method returns `"profile"`, telling Spring to render a **profile page** (`profile.html` or `profile.jsp`).  
 ---
 
-## **3. Converting User Claims to JSON**  
+#### **3. Converting User Claims to JSON**  
 
-### **Defining the JSON Conversion Method**  
+##### **Defining the JSON Conversion Method**  
 
 ```java
 private String claimsToJson(Map<String, Object> claims) {
@@ -677,12 +670,12 @@ private String claimsToJson(Map<String, Object> claims) {
     return "Error parsing claims to JSON.";
 }
 ```
-#### **What does this method do?**  
+##### **What does this method do?**  
 ✅ Converts **user claims** (a Java `Map<String, Object>`) into a **formatted JSON string**.  
 ✅ Uses **Jackson’s ObjectMapper** for conversion.  
 ✅ If an error occurs, it logs the issue and returns an error message.  
 
-### **Example JSON Output (User Claims from Google OAuth2)**  
+##### **Example JSON Output (User Claims from Google OAuth2)**  
 ```json
 {
     "sub": "auth0|1234567890",
@@ -696,9 +689,9 @@ private String claimsToJson(Map<String, Object> claims) {
 ```
 ---
 
-## **4. Handling the Profile View**  
+#### **4. Handling the Profile View**  
 
-### **Example Thymeleaf Profile Page (`profile.html`)**
+##### **Example Thymeleaf Profile Page (`profile.html`)**
 ```html
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
@@ -722,14 +715,14 @@ This **renders user details** with Thymeleaf, showing:
 
 ---
 
-## **5. Logging and Error Handling**  
+#### **5. Logging and Error Handling**  
 
 If JSON serialization fails, an error message is logged:  
 
 ```java
 log.error("Error parsing claims to JSON", jpe);
 ```
-## Requirements
+### Requirements
 
 - Java 17
 

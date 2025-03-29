@@ -98,7 +98,6 @@ The configuration enables:
 ✅ **Custom authentication success handling**.  
 ✅ **Secure logout with redirection to the identity provider**.  
 
-#### **Class Overview**  
 ```java
 @Configuration
 public class SecurityConfig {

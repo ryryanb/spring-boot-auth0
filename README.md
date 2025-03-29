@@ -2,11 +2,11 @@
 
 Welcome to this project, a Spring Boot web application that integrates OAuth2 authentication using Okta/Auth0 and securely manages user sessions with Redis. This project demonstrates how to implement secure user authentication, handle session persistence, and ensure a seamless login/logout experience.
 
-Key Features 🚀
-✅ Secure OAuth2 Authentication – Users can log in using Okta/Auth0 with OpenID Connect (OIDC).
-✅ Custom Authentication Success Handling – Store user information in the database and cache access tokens in Redis.
-✅ Session Management with Redis – Access and refresh tokens are securely stored and retrieved from Redis.
-✅ Secure Logout with Redirection – Ensures users are properly logged out and redirected to the appropriate page.
+Key Features 🚀  
+✅ Secure OAuth2 Authentication – Users can log in using Okta/Auth0 with OpenID Connect (OIDC).  
+✅ Custom Authentication Success Handling – Store user information in the database and cache access tokens in Redis.  
+✅ Session Management with Redis – Access and refresh tokens are securely stored and retrieved from Redis.  
+✅ Secure Logout with Redirection – Ensures users are properly logged out and redirected to the appropriate page.  
 Whether you're building a secure, scalable authentication system or just exploring Spring Security and OAuth2, this project serves as a practical example of modern authentication practices in Java. 
 
 ## COMPONENTS

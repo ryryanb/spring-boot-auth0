@@ -10,11 +10,11 @@ Key Features 🚀
 Whether you're building a secure, scalable authentication system or just exploring Spring Security and OAuth2, this project serves as a practical example of modern authentication practices in Java. 
 
 ## COMPONENTS
-### A. HomeController.java
-The HomeController class provides:
-✅ A homepage displaying user profile data from an OIDC (OpenID Connect) provider
-✅ An endpoint to retrieve user session data stored in Redis
-✅ An endpoint to refresh authentication tokens using Auth0's OAuth 2.0 API
+### A. HomeController.java  
+The HomeController class provides:  
+✅ A homepage displaying user profile data from an OIDC (OpenID Connect) provider  
+✅ An endpoint to retrieve user session data stored in Redis  
+✅ An endpoint to refresh authentication tokens using Auth0's OAuth 2.0 API  
 Let's break it down.
 
 #### 1. Displaying User Profile Information
@@ -25,14 +25,15 @@ public String home(Model model, @AuthenticationPrincipal OidcUser principal) {
     }
     return "index";
 }
-When a user logs in via OIDC (OpenID Connect), their authentication details (claims) are retrieved and displayed on the homepage. The profile data might include:
-    • Name
-    • Email
-    • Profile Picture
-    • Other identity claims
+When a user logs in via OIDC (OpenID Connect), their authentication details (claims) are retrieved and displayed on the homepage. The profile data might include:  
+    • Name  
+    • Email  
+    • Profile Picture  
+    • Other identity claims  
 
 #### 2. Retrieving User Sessions from Redis
-@GetMapping("/user/session")
+@GetMapping("/user/session")  
+```
 public ResponseEntity<Map<String, String>> getSession(@RequestParam String userId) {
     Map<String, String> session = redisAuthService.getSession(userId);
     if (session != null) {
@@ -40,7 +41,9 @@ public ResponseEntity<Map<String, String>> getSession(@RequestParam String userI
     }
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Session not found"));
 }
+```
 This API fetches session data for a given userId from Redis.
+```
 🔹 Example Request (Fixed URL Encoding):
 curl -X GET "http://localhost:3000/user/session?userId=google-oauth2%7C115873500067805995920"
 🔹 Example JSON Response (Successful):
@@ -52,8 +55,9 @@ curl -X GET "http://localhost:3000/user/session?userId=google-oauth2%7C115873500
 {
     "error": "Session not found"
 }
-
+```
 #### 3. Refreshing Access Tokens via Auth0
+```
 @PostMapping("/refresh-token")
 public ResponseEntity<Map<String, String>> refreshToken(@RequestParam String userId) {
     Map<String, String> session = redisAuthService.getSession(userId);
@@ -80,7 +84,9 @@ public ResponseEntity<Map<String, String>> refreshToken(@RequestParam String use
 
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Failed to refresh token"));
 }
-This endpoint requests a new access token from Auth0 using the refresh token. If successful, the new token is stored back into Redis.
+```
+This endpoint requests a new access token from Auth0 using the refresh token. If successful, the new token is stored back into Redis.  
+```
 🔹 Example Request:
 curl -X POST "http://localhost:3000/refresh-token?userId=google-oauth2%7C115873500067805995920"
 🔹 Example Response (Success):
@@ -92,9 +98,9 @@ curl -X POST "http://localhost:3000/refresh-token?userId=google-oauth2%7C1158735
 {
     "error": "Failed to refresh token"
 }
-
-### B. SecurityConfig.java
-The configuration enables:  
+```
+### B. SecurityConfig.java  
+The configuration enables:   
 ✅ **OAuth2 login with Okta/Auth0**.  
 ✅ **Custom authentication success handling**.  
 ✅ **Secure logout with redirection to the identity provider**.  
@@ -120,7 +126,6 @@ private String clientId;
 ```
 - These values **fetch the OAuth2 issuer URL and client ID** from `application.properties`.  
 
----
 
 ##### **Defining the Security Filter Chain**  
 
@@ -139,9 +144,9 @@ public SecurityFilterChain configure(HttpSecurity http) throws Exception {
 }
 ```
 
-🔹 **What happens here?**  
-1️⃣ **Publicly Accessible Routes:**  
-   - Requests to `/` and `/images/**` are **allowed without authentication**.  
+🔹 **What happens here?**   
+1️⃣ **Publicly Accessible Routes:**    
+   - Requests to `/` and `/images/**` are **allowed without authentication**.   
 2️⃣ **Protected Routes:**  
    - Any other request **requires authentication**.  
 3️⃣ **OAuth2 Login:**  
@@ -150,7 +155,6 @@ public SecurityFilterChain configure(HttpSecurity http) throws Exception {
 4️⃣ **Logout Handling:**  
    - Calls `logoutHandler()` to **log out the user from Okta/Auth0** and **redirect them back**.  
 
----
 
 #### **2. Handling Logout & Redirecting Users**  
 
@@ -178,8 +182,6 @@ private LogoutHandler logoutHandler() {
 https://your-auth0-domain.com/v2/logout?client_id=YOUR_CLIENT_ID&returnTo=http://localhost:8080
 ```
 ✅ Ensures users **log out completely** from the identity provider.  
-
----
 
 #### **3. Custom Authentication Success Handling**  
 
@@ -722,11 +724,11 @@ If JSON serialization fails, an error message is logged:
 ```java
 log.error("Error parsing claims to JSON", jpe);
 ```
-### Requirements
+## Requirements
 
 - Java 17
 
-### Running the Application  
+## Running the Application  
 
 This section provides step-by-step instructions to configure OAuth2 credentials, start the Spring Boot application, and test authentication features, including session storage in Redis.
 

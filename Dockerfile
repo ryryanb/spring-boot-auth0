@@ -1,9 +1,14 @@
-FROM gradle:8.3-jdk17
+# Use an official Java runtime as a parent image
+FROM eclipse-temurin:17-jdk
 
-WORKDIR /tmp
-ADD . /tmp
+# Set the working directory in the container
+WORKDIR /app
 
-RUN gradle build
+# Copy the build JAR file into the container
+COPY target/*.jar app.jar
 
-CMD ["gradle", "clean", "bootRun"]
+# Expose the port (matching your `server.port` in Spring Boot)
 EXPOSE 3000
+
+# Run the application
+ENTRYPOINT ["java", "-jar", "app.jar"]

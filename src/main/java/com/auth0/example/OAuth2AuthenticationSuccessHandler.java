@@ -2,9 +2,12 @@ package com.auth0.example;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.dao.DataAccessException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
@@ -23,7 +26,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     private final UserRepository userRepository;
     private final RedisAuthService redisAuthService;
     private final OAuth2AuthorizedClientService authorizedClientService; // ✅ Inject OAuth2AuthorizedClientService
-
+    private final ConcurrentHashMap<String, Map<String, String>> localCache = new ConcurrentHashMap<>();
     public OAuth2AuthenticationSuccessHandler(UserRepository userRepository, 
                                               RedisAuthService redisAuthService,
                                               OAuth2AuthorizedClientService authorizedClientService) {
@@ -76,8 +79,18 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
                     ? authorizedClient.getRefreshToken().getTokenValue()
                     : null;
 
-            // ✅ Store in Redis
-            redisAuthService.saveSession(userId, accessToken, refreshToken);
+         // Store tokens in Redis with a fallback to local cache
+            if (accessToken != null) {
+                try {
+                    redisAuthService.saveSession(userId, accessToken, refreshToken);
+                } catch (DataAccessException e) {
+                    System.err.println("⚠️ Redis is unavailable, falling back to in-memory cache.");
+                    Map<String, String> tokenMap = new HashMap<>();
+                    tokenMap.put("accessToken", accessToken);
+                    tokenMap.put("refreshToken", refreshToken);
+                    localCache.put(userId, tokenMap);
+                }
+            }
         }
         response.sendRedirect("/");
     }
